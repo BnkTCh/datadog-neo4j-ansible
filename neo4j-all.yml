@@ -1,0 +1,40 @@
+---
+- name: neo4j-datadog-install.yml | Datadog for Neo4j Install
+  hosts: neo4j
+  user: root
+  become: true
+  #gather_facts: false
+  gather_facts: true
+
+  roles:
+    - role: datadog
+      tags: datadog
+
+  vars:
+    datadog_config:
+      hostname: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+      api_key: "{{ lookup('env', 'DD_API_KEY') }}"
+
+  pre_tasks:
+    - setup:
+      tags:
+        - datadog
+
+  post_tasks:
+    - name: Install the neo4j check.
+      shell:
+        'datadog-agent integration install -t datadog-neo4j==2.0.2 --allow-root'
+    - name: Create a conf.yaml file for Neo4j integration.
+      shell: 'echo "instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]["ansible_host"] }}:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
+        #'echo -e "instances:\n  - openmetrics_endpoint: http://localhost:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
+        #'echo -e "instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]['ansible_host'] }}:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
+        #echo -e 'instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]["ansible_host"] }}:2004' > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml
+      tags:
+        - datadog
+    - name: Restart datadog agent.
+      service:
+        name: datadog-agent
+        state: restarted
+      tags:
+        - datadog
+# vim: sw=2 ts=2 sts=2 et
