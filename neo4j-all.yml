@@ -1,10 +1,9 @@
 ---
 - name: neo4j-datadog-install.yml | Datadog for Neo4j Install
   hosts: neo4j
-  user: root
+  user: ubuntu
   become: true
-  #gather_facts: false
-  gather_facts: true
+  gather_facts: false
 
   roles:
     - role: datadog
@@ -26,9 +25,6 @@
         'datadog-agent integration install -t datadog-neo4j==2.0.2 --allow-root'
     - name: Create a conf.yaml file for Neo4j integration.
       shell: 'echo "instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]["ansible_host"] }}:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
-        #'echo -e "instances:\n  - openmetrics_endpoint: http://localhost:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
-        #'echo -e "instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]['ansible_host'] }}:2004" > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml'
-        #echo -e 'instances:\n  - openmetrics_endpoint: http://{{ hostvars[inventory_hostname]["ansible_host"] }}:2004' > /etc/datadog-agent/conf.d/neo4j.d/conf.yaml
       tags:
         - datadog
     - name: Restart datadog agent.
