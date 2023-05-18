@@ -3,7 +3,7 @@
   hosts: neo4j
   user: ubuntu
   become: true
-  gather_facts: false
+  gather_facts: true
 
   roles:
     - role: datadog
@@ -11,7 +11,7 @@
 
   vars:
     datadog_config:
-      hostname: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+      #      hostname: "{{ ansible_ec2_instance_id }}"
       api_key: "{{ lookup('env', 'DD_API_KEY') }}"
 
   pre_tasks:
@@ -20,6 +20,9 @@
         - datadog
 
   post_tasks:
+    - name: Print available variables
+      debug:
+        var: hostvars[inventory_hostname]
     - name: Install the neo4j check.
       shell:
         'datadog-agent integration install -t datadog-neo4j==2.0.2 --allow-root'
